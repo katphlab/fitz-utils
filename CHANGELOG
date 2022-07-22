@@ -1,0 +1,10 @@
+## **[0.0.1] 22-07-2022**
+* First Release
+### **[Added]**
+* ProcessedPage
+    * Get Fonts Flag
+    * Get Block dataframe
+    * Get Span dataframe
+    * Get Word dataframe
+* ProcessedDoc
+    * Add indexing
