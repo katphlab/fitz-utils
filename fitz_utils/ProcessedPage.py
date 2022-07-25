@@ -1,4 +1,5 @@
 import fitz
+import numpy as np
 import pandas as pd
 
 
@@ -97,7 +98,7 @@ class ProcessedPage:
         """Generate words dataframe from page
 
         Returns:
-            pd.pd.DataFrame: ["x0", "y0", "x1", "y1", "text", "block_no",
+            pd.DataFrame: ["x0", "y0", "x1", "y1", "text", "block_no",
             "line_no", "word_no", "rect"]
         """
         # Word data format (x0, y0, x1, y1, "word", block_no, line_no, word_no) #
@@ -114,3 +115,14 @@ class ProcessedPage:
         float_dtypes = word_df.select_dtypes("float64")
         word_df[float_dtypes.columns] = float_dtypes.astype("int")
         return word_df
+
+    def get_opencv_img(self) -> np.array:
+        """Get opencv image from page
+
+        Returns:
+            np.array: Opencv image
+        """
+        pix = self.page.get_pixmap()
+        im = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
+        im = np.ascontiguousarray(im[..., [2, 1, 0]])  # rgb to bgr
+        return im

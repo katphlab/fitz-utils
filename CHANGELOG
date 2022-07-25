@@ -1,3 +1,8 @@
+## **[0.0.2] 25-07-2022**
+### **[Added]**
+* ProcessedPage
+    * **get_opencv_img** -> Returns opencv image of page
+
 ## **[0.0.1] 22-07-2022**
 * First Release
 ### **[Added]**
