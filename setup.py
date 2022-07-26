@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name=package,
-    version="0.0.2",
+    version="0.0.3",
     install_requires=["numpy", "pandas", "pymupdf"],
     description=description,
     long_description=long_description,

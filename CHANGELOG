@@ -1,3 +1,8 @@
+## **[0.0.3] 26-07-2022**
+### **[Modified]**
+* ProcessedPage
+    * **get_opencv_img** -> Takes scale argument to scale the page pixmap
+
 ## **[0.0.2] 25-07-2022**
 ### **[Added]**
 * ProcessedPage
