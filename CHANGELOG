@@ -1,3 +1,11 @@
+## **[0.0.4] 01-08-2022**
+### **[Added]**
+* Unit Test for get_unformatted_opencv_img
+* Add tests dependency in setup.py
+### **[Modified]**
+* ProcessedPage
+    * **get_unformatted_opencv_img** -> Creates an image after placing text from page on an empty page
+
 ## **[0.0.3] 26-07-2022**
 ### **[Modified]**
 * ProcessedPage

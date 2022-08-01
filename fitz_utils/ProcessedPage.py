@@ -116,7 +116,7 @@ class ProcessedPage:
         word_df[float_dtypes.columns] = float_dtypes.astype("int")
         return word_df
 
-    def get_opencv_img(self, scale: fitz.Matrix = fitz.Matrix(1,1)) -> np.array:
+    def get_opencv_img(self, scale: fitz.Matrix = fitz.Matrix(1, 1)) -> np.array:
         """Get opencv image from page
 
         Args:
@@ -129,3 +129,28 @@ class ProcessedPage:
         im = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
         im = np.ascontiguousarray(im[..., [2, 1, 0]])  # rgb to bgr
         return im
+
+    def get_unformatted_opencv_img(self) -> np.array:
+        """Generate image of current page by placing text on a blank page to
+        remove any fancy formatting from the original page
+
+        Returns:
+            np.array: OpenCV image of unformatted page
+        """
+        df = self.get_word_df()
+
+        temp_doc = fitz.open()
+        temp_page = temp_doc.new_page(
+            width=self.page.rect.width, height=self.page.rect.height
+        )
+        df.apply(
+            lambda row: temp_page.insert_text(
+                (row.x0, row.y1),
+                row["text"],
+                fontsize=8,
+            ),
+            axis=1,
+        )
+        unformatted_img = ProcessedPage(temp_page).get_opencv_img()
+        temp_doc.close()
+        return unformatted_img
