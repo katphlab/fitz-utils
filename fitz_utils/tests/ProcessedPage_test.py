@@ -7,7 +7,7 @@ class TestProcessedPage:
     @pytest.fixture()
     def processedpage(self):
         doc = ProcessedDoc.ProcessedDoc("fitz_utils/tests/docs/test.pdf")
-        yield doc[92]
+        yield doc[1]
 
     def test_get_unformatted_opencv_img_1(self, processedpage):
         result = processedpage.get_unformatted_opencv_img()
