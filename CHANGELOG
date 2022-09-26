@@ -1,3 +1,8 @@
+## **[0.0.5] 26-09-2022**
+### **[Added]**
+* ProcessedDoc
+    * Added the \_\_len\_\_ magic method to get the document length
+
 ## **[0.0.4] 01-08-2022**
 ### **[Added]**
 * Unit Test for get_unformatted_opencv_img
