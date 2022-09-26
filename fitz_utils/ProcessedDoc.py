@@ -11,5 +11,8 @@ class ProcessedDoc:
         self.doc = fitz.open(str(fname))
         pass
 
+    def __len__(self) -> int:
+        return len(self.doc)
+
     def __getitem__(self, key):
         return ProcessedPage(self.doc[key])
