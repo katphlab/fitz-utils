@@ -3,5 +3,3 @@ build/
 dist/
 *.pyc
 fitz_utils.egg-info/
-.idea
-.DS_Store
