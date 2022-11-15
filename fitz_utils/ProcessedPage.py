@@ -116,16 +116,23 @@ class ProcessedPage:
         word_df[float_dtypes.columns] = float_dtypes.astype("int")
         return word_df
 
-    def get_opencv_img(self, scale: fitz.Matrix = fitz.Matrix(1, 1)) -> np.array:
+    def get_opencv_img(
+        self, scale: fitz.Matrix = fitz.Matrix(1, 1), dpi=int or None
+    ) -> np.array:
         """Get opencv image from page
 
         Args:
             scale (fitz.Matrix): scaling matrix for generating pixmap
+            dpi: dots per inch which can be used in place of Matrix
 
         Returns:
             np.array: Opencv image
         """
-        pix = self.page.get_pixmap(matrix=scale)
+        if dpi:
+            pix = self.page.get_pixmap(dpi=dpi)
+        else:
+            pix = self.page.get_pixmap(matrix=scale)
+
         im = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
         im = np.ascontiguousarray(im[..., [2, 1, 0]])  # rgb to bgr
         return im
