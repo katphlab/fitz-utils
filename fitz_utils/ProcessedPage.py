@@ -117,7 +117,7 @@ class ProcessedPage:
         return word_df
 
     def get_opencv_img(
-        self, scale: fitz.Matrix = fitz.Matrix(1, 1), dpi=int or None
+        self, scale: fitz.Matrix = fitz.Matrix(1, 1), dpi: int or None = None
     ) -> np.array:
         """Get opencv image from page
 
