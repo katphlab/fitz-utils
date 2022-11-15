@@ -1,5 +1,12 @@
+## **[0.0.6] 15-11-2022**
+### **[Modified]**
+* ProcessedPage
+    * Added the dpi support as an alternative to the fitz.Matrix
+    * Added the pre-commit hook to control the coding standards
+    * Updated the readme to provide instructions to requirements and pre-commit
+
 ## **[0.0.5] 26-09-2022**
-### **[Added]**
+### **[Modified]**
 * ProcessedDoc
     * Added the \_\_len\_\_ magic method to get the document length
 
