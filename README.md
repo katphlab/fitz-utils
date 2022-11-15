@@ -14,7 +14,7 @@ python setup.py bdist_wheel
 ```
 3. Install the package
 ```
-pip install dist/fitz_utils-0.0.5-py3-none-any.whl
+pip install dist/fitz_utils-0.0.6-py3-none-any.whl
 ```
 
 ## How to Export the Environment
