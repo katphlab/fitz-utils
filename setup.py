@@ -7,7 +7,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name=package,
-    version="0.0.5",
+    version="0.0.6",
     install_requires=["numpy>", "pandas", "pymupdf"],
     tests_require=["pytest", "opencv-python"],
     description=description,
