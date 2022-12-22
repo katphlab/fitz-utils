@@ -1,3 +1,9 @@
+## **[0.0.7] 22-12-2022**
+### **[Modified]**
+* ProcessedDoc
+    * Updated to support reading from the bytes stream.
+    * Added the file extension ".md" to the CHANGELOG as CHANGELOG.md.
+
 ## **[0.0.6] 15-11-2022**
 ### **[Modified]**
 * ProcessedPage
