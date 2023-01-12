@@ -16,6 +16,11 @@ python setup.py bdist_wheel
 ```
 pip install dist/fitz_utils-0.0.7-py3-none-any.whl
 ```
+4. Install the package with poetry (If you're using poetry) - OPTIONAL <br/>
+Copy the `dist/fitz_utils-0.0.7-py3-none-any.whl` into your project folder such as `your_project/packages/fitz-utils/fitz_utils-0.0.7-py3-none-any.whl`
+```
+poetry add packages/fitz-utils/fitz_utils-0.0.7-py3-none-any.whl
+```
 
 ## How to Export the Environment
 1. Export the requirements.txt with pip
