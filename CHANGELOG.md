@@ -1,3 +1,8 @@
+## **[0.0.8] 08-02-2023**
+### **[Added]**
+* fitz_utils
+    * Update __init__ to add classes.
+
 ## **[0.0.7] 22-12-2022**
 ### **[Modified]**
 * ProcessedDoc
