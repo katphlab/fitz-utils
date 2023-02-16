@@ -1,7 +1,8 @@
 from pathlib import Path
+
 import fitz
 
-from .ProcessedPage import ProcessedPage
+from fitz_utils.ProcessedPage import ProcessedPage
 
 
 class ProcessedDoc:
@@ -12,7 +13,6 @@ class ProcessedDoc:
             self.doc = fitz.open(stream=stream)
         else:
             self.doc = fitz.open(str(fname))
-        pass
 
     def __len__(self) -> int:
         return len(self.doc)
