@@ -4,9 +4,9 @@ Add extra functions for use with pymupdf module
 ## Installation
 Only this step is required if you want to install `fitz_utils` package in your project.
 
-1. Ensure wheel package is install in the environment
+1. Ensure wheel and setuptools packages are installed in the environment
 ```
-pip install wheel
+pip install wheel==0.38.4 setuptools==65.5.1
 ```
 2. Create wheel of the package
 ```
