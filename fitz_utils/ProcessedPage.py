@@ -118,7 +118,7 @@ class ProcessedPage:
 
     def get_opencv_img(
         self, scale: fitz.Matrix = fitz.Matrix(1, 1), dpi: int or None = None
-    ) -> np.array:
+    ) -> np.ndarray:
         """Get opencv image from page
 
         Args:
@@ -137,7 +137,7 @@ class ProcessedPage:
         im = np.ascontiguousarray(im[..., [2, 1, 0]])  # rgb to bgr
         return im
 
-    def get_unformatted_opencv_img(self) -> np.array:
+    def get_unformatted_opencv_img(self) -> np.ndarray:
         """Generate image of current page by placing text on a blank page to
         remove any fancy formatting from the original page
 
