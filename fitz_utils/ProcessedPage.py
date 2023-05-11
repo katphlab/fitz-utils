@@ -1,6 +1,7 @@
 import fitz
 import numpy as np
 import pandas as pd
+import ftfy
 
 
 class ProcessedPage:
@@ -161,3 +162,28 @@ class ProcessedPage:
         unformatted_img = ProcessedPage(temp_page).get_opencv_img()
         temp_doc.close()
         return unformatted_img
+
+    def is_digital(self) -> bool:
+        """Check the page is scan or digital
+
+        Returns:
+            bool: True if Digital. False if Scan.
+        """
+        # Get the list of raw text
+        extracted_texts = self.page.get_text().split()
+
+        # Check how many words are likely mojibake
+        mojibakes = [
+            ftfy.badness.is_bad(extracted_text) for extracted_text in extracted_texts
+        ]
+
+        # Get the mojibake and non_mojibake word counts
+        total_count = len(extracted_texts)
+        mojibakes_count = sum(mojibakes)
+        non_mojibackes_count = total_count - mojibakes_count
+
+        # If there is some raw texts in list and majority is non_mojibakes
+        if total_count > 0 and mojibakes_count < non_mojibackes_count:
+            return True
+
+        return False
