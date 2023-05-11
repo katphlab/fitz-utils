@@ -1,3 +1,9 @@
+## **[0.0.9] 11-05-2023**
+### **[Added]**
+* ProcessedPage
+    * **is_digital** -> Check whether the page is digital or scan
+
+
 ## **[0.0.8] 08-02-2023**
 ### **[Added]**
 * fitz_utils
