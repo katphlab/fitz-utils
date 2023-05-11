@@ -24,6 +24,7 @@ dependencies:
     - distlib==0.3.6
     - exceptiongroup==1.0.3
     - filelock==3.8.0
+    - ftfy==6.1.1
     - identify==2.5.8
     - iniconfig==1.1.1
     - nodeenv==1.7.0
@@ -44,4 +45,5 @@ dependencies:
     - toml==0.10.2
     - tomli==2.0.1
     - virtualenv==20.16.7
+    - wcwidth==0.2.6
 prefix: /Users/chuu/miniforge3/envs/fitz-utils
