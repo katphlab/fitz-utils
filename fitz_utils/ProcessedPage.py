@@ -64,12 +64,11 @@ class ProcessedPage:
         """Generate lines dataframe from page
 
         Returns:
-            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "size",
-            "flags","color", "font", "block_num", "line_num", "span_num", "rect"]
+            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "block_num", "line_num", "rect"]
         """
 
         blocks = self.page.get_text("dict")["blocks"]
-        cols = ["x0", "y0", "x1", "y1", "text", "block_no", "line_no", "rect"]
+        cols = ["x0", "y0", "x1", "y1", "text", "block_num", "line_num", "rect"]
 
         data = []
         for block_num, block in enumerate(blocks):
