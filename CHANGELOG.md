@@ -1,3 +1,9 @@
+## **[0.0.10] 12-05-2023**
+### **[Added]**
+* ProcessedPage
+  * **get_line_df** -> Get the text of the page line by line and return it as the dataframe
+
+
 ## **[0.0.9] 11-05-2023**
 ### **[Added]**
 * ProcessedPage
