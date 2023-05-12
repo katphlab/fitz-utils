@@ -163,27 +163,36 @@ class ProcessedPage:
         temp_doc.close()
         return unformatted_img
 
-    def is_digital(self) -> bool:
+    def is_digital(self, tolerance: float = 0.5) -> bool:
         """Check the page is scan or digital
+
+        Calculate the number of mojibakes counts and check
+        whether it's under the acceptable tolerance rate or not
+
+        Args:
+            tolerance (float): The tolerance rate for mojibakes (gibberish words)
 
         Returns:
             bool: True if Digital. False if Scan.
         """
+
         # Get the list of raw text
         extracted_texts = self.page.get_text().split()
+
+        # If we cannot extract any text, it maybe either blank page or scan page
+        if len(extracted_texts) == 0:
+            return False
 
         # Check how many words are likely mojibake
         mojibakes = [
             ftfy.badness.is_bad(extracted_text) for extracted_text in extracted_texts
         ]
 
-        # Get the mojibake and non_mojibake word counts
-        total_count = len(extracted_texts)
-        mojibakes_count = sum(mojibakes)
-        non_mojibackes_count = total_count - mojibakes_count
+        # Get the mojibake percentage
+        mojibakes_percent = sum(mojibakes) / len(extracted_texts)
 
-        # If there is some raw texts in list and majority is non_mojibakes
-        if total_count > 0 and mojibakes_count < non_mojibackes_count:
+        # If the mojibakes percent is same or under the tolerance rate
+        if mojibakes_percent <= tolerance:
             return True
 
         return False
