@@ -60,6 +60,43 @@ class ProcessedPage:
         block_df[float_dtypes.columns] = float_dtypes.astype("int")
         return block_df
 
+    def get_line_df(self):
+        """Generate lines dataframe from page
+
+        Returns:
+            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "size",
+            "flags","color", "font", "block_num", "line_num", "span_num", "rect"]
+        """
+
+        blocks = self.page.get_text("dict")["blocks"]
+        cols = ["x0", "y0", "x1", "y1", "text", "block_no", "line_no", "rect"]
+
+        data = []
+        for block_num, block in enumerate(blocks):
+            if "image" in block.keys():
+                continue
+
+            for line_num, line in enumerate(block["lines"]):
+                span_text = list()
+
+                line_bbox = [int(loc) for loc in list(line["bbox"])]
+                line_rect = fitz.Rect(line["bbox"])
+
+                for span_num, span in enumerate(line["spans"]):
+                    rect = fitz.Rect(span["bbox"])
+                    if rect not in self.page.rect or set(span["text"]) == {" "}:
+                        continue
+                    span_text.append(span["text"])
+
+                line_text = " ".join(span_text)
+
+                data.append([*line_bbox, line_text, block_num, line_num, line_rect])
+
+        line_df = pd.DataFrame(data=data, columns=cols)
+        float_dtypes = line_df.select_dtypes("float64")
+        line_df[float_dtypes.columns] = float_dtypes.astype("int")
+        return line_df
+
     def get_span_df(self) -> pd.DataFrame:
         """Generate spans dataframe from page
 
