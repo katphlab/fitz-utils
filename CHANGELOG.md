@@ -1,3 +1,11 @@
+## **[0.0.11] 15-05-2023**
+### **[Modified]**
+* ProcessedPage
+  * **get_block_df** -> Added fixed_text column with the ftfy library
+  * **get_line_df** -> Added fixed_text column with the ftfy library
+  * **get_span_df** -> Added fixed_text column with the ftfy library
+  * **get_word_df** -> Added fixed_text column with the ftfy library
+
 ## **[0.0.10] 12-05-2023**
 ### **[Added]**
 * ProcessedPage
