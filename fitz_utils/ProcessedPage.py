@@ -40,12 +40,12 @@ class ProcessedPage:
         """Generate blocks dataframe from text of page
 
         Returns:
-            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "rect"]
+            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "fixed_text", "rect"]
         """
         # Block data format: (x0, y0, x1, y1, "lines in the block", block_no, #
         # block_type) #
         blocks: list = self.page.get_text("blocks")
-        cols = ["x0", "y0", "x1", "y1", "text", "rect"]
+        cols = ["x0", "y0", "x1", "y1", "text", "fixed_text", "rect"]
 
         block_data = []
         for block in blocks:
@@ -54,7 +54,9 @@ class ProcessedPage:
                 continue
             rect = fitz.Rect(block[:4])
             block = list(block[:5]) + [rect]
+            block.insert(5, ftfy.fix_text(block[4]))
             block_data.append(block)
+
         block_df = pd.DataFrame(block_data, columns=cols)
         float_dtypes = block_df.select_dtypes("float64")
         block_df[float_dtypes.columns] = float_dtypes.astype("int")
@@ -64,11 +66,22 @@ class ProcessedPage:
         """Generate lines dataframe from page
 
         Returns:
-            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "block_num", "line_num", "rect"]
+            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "fixed_text", "size",
+            "flags","color", "font", "block_num", "line_num", "span_num", "rect"]
         """
 
         blocks = self.page.get_text("dict")["blocks"]
-        cols = ["x0", "y0", "x1", "y1", "text", "block_num", "line_num", "rect"]
+        cols = [
+            "x0",
+            "y0",
+            "x1",
+            "y1",
+            "text",
+            "fixed_text",
+            "block_no",
+            "line_no",
+            "rect",
+        ]
 
         data = []
         for block_num, block in enumerate(blocks):
@@ -88,8 +101,18 @@ class ProcessedPage:
                     span_text.append(span["text"])
 
                 line_text = " ".join(span_text)
+                fixed_line_text = ftfy.fix_text(line_text)
 
-                data.append([*line_bbox, line_text, block_num, line_num, line_rect])
+                data.append(
+                    [
+                        *line_bbox,
+                        line_text,
+                        fixed_line_text,
+                        block_num,
+                        line_num,
+                        line_rect,
+                    ]
+                )
 
         line_df = pd.DataFrame(data=data, columns=cols)
         float_dtypes = line_df.select_dtypes("float64")
@@ -100,11 +123,11 @@ class ProcessedPage:
         """Generate spans dataframe from page
 
         Returns:
-            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "size",
+            pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "fixed_text", "size",
             "flags","color", "font", "block_num", "line_num", "span_num", "rect"]
         """
         blocks = self.page.get_text("dict")["blocks"]
-        cols = ["x0", "y0", "x1", "y1", "text", "size", "flags"]
+        cols = ["x0", "y0", "x1", "y1", "text", "fixed_text", "size", "flags"]
         cols += ["color", "font", "block_num", "line_num", "span_num", "rect"]
 
         data = []
@@ -119,6 +142,7 @@ class ProcessedPage:
 
                     span_data = list(span["bbox"])
                     span_data.append(span["text"])
+                    span_data.append(ftfy.fix_text(span["text"]))
                     span_data.append(span["size"])
                     span_data.append(span["flags"])
                     span_data.append(fitz.sRGB_to_pdf(span["color"]))
@@ -135,19 +159,31 @@ class ProcessedPage:
         """Generate words dataframe from page
 
         Returns:
-            pd.DataFrame: ["x0", "y0", "x1", "y1", "text", "block_no",
+            pd.DataFrame: ["x0", "y0", "x1", "y1", "text", "fixed_text", "block_no",
             "line_no", "word_no", "rect"]
         """
         # Word data format (x0, y0, x1, y1, "word", block_no, line_no, word_no) #
         words: list = self.page.get_text("words")
-        cols = ["x0", "y0", "x1", "y1", "text", "block_no", "line_no", "word_no"]
+        cols = [
+            "x0",
+            "y0",
+            "x1",
+            "y1",
+            "text",
+            "fixed_text",
+            "block_no",
+            "line_no",
+            "word_no",
+        ]
         cols += ["rect"]
 
         word_data = []
         for word in words:
             rect = fitz.Rect(word[:4])
             word = list(word) + [rect]
+            word.insert(5, ftfy.fix_text(word[4]))
             word_data.append(word)
+
         word_df = pd.DataFrame(word_data, columns=cols)
         float_dtypes = word_df.select_dtypes("float64")
         word_df[float_dtypes.columns] = float_dtypes.astype("int")
