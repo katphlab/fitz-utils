@@ -54,8 +54,9 @@ class ProcessedPage:
                 continue
             rect = fitz.Rect(block[:4])
             block = list(block[:5]) + [rect]
+            block.insert(5, ftfy.fix_text(block[4]))
             block_data.append(block)
-            block_data.insert(5, ftfy.fix_text(block_data[4]))
+
         block_df = pd.DataFrame(block_data, columns=cols)
         float_dtypes = block_df.select_dtypes("float64")
         block_df[float_dtypes.columns] = float_dtypes.astype("int")
@@ -180,8 +181,8 @@ class ProcessedPage:
         for word in words:
             rect = fitz.Rect(word[:4])
             word = list(word) + [rect]
+            word.insert(5, ftfy.fix_text(word[4]))
             word_data.append(word)
-            word_data.insert(5, ftfy.fix_text(word_data[4]))
 
         word_df = pd.DataFrame(word_data, columns=cols)
         float_dtypes = word_df.select_dtypes("float64")
