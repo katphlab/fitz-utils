@@ -235,21 +235,25 @@ class ProcessedPage:
         temp_doc.close()
         return unformatted_img
 
-    def is_digital(self, tolerance: float = 0.5) -> bool:
+    def is_digital(self, tolerance: float = 0.5, rect: fitz.Rect = None) -> bool:
         """Check the page is scan or digital
 
-        Calculate the number of mojibakes counts and check
-        whether it's under the acceptable tolerance rate or not
+        Calculate the number of mojibakes counts and check (based on ROI if
+        it's given) whether it's under the acceptable tolerance rate or not
 
         Args:
             tolerance (float): The tolerance rate for mojibakes (gibberish words)
+            rect (fitz.Rect): The ROI (Region of Interest) rectangle on the page to check if it's the digital
 
         Returns:
             bool: True if Digital. False if Scan.
         """
 
-        # Get the list of raw text
-        extracted_texts = self.page.get_text().split()
+        # Get the list of raw text on whole page or a segment of page if the rect is present
+        if rect:
+            extracted_texts = self.page.get_textbox(rect).split()
+        else:
+            extracted_texts = self.page.get_text().split()
 
         # If we cannot extract any text, it maybe either blank page or scan page
         if len(extracted_texts) == 0:
