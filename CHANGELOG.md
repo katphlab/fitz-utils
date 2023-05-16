@@ -1,3 +1,8 @@
+## **[0.0.12] 16-05-2023**
+### **[Modified]**
+* ProcessedPage
+  * **is_digital** -> Added the rect parameter to check if the ROI is digital
+
 ## **[0.0.11] 15-05-2023**
 ### **[Modified]**
 * ProcessedPage
