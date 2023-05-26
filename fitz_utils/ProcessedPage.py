@@ -272,3 +272,30 @@ class ProcessedPage:
             return True
 
         return False
+
+    def is_text_horizontal(self):
+        """Check the orientation of the text in the page.
+
+        Returns:
+            bool: true if text is 'horizontal'. Otherwise, false for 'vertical'
+        """
+        horizontals = 0
+        verticals = 0
+
+        # Select the bounding box where the char length is more than 2
+        line_df = self.get_line_df()
+        line_df["fixed_text"] = line_df["fixed_text"].str.strip()
+        line_df = line_df[line_df["fixed_text"].str.len() > 2]
+
+        for _, row in line_df.iterrows():
+            x0, y0, x1, y1 = row["x0"], row["y0"], row["x1"], row["y1"]
+
+            x_len = x1 - x0
+            y_len = y1 - y0
+
+            if y_len > x_len:
+                verticals += 1
+            else:
+                horizontals += 1
+
+        return horizontals >= verticals
