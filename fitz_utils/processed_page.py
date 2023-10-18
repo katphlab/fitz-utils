@@ -1,7 +1,7 @@
 import fitz
+import ftfy
 import numpy as np
 import pandas as pd
-import ftfy
 
 
 class ProcessedPage:
@@ -62,7 +62,7 @@ class ProcessedPage:
         block_df[float_dtypes.columns] = float_dtypes.astype("int")
         return block_df
 
-    def get_line_df(self):
+    def get_line_df(self) -> pd.DataFrame:
         """Generate lines dataframe from page
 
         Returns:
@@ -272,3 +272,31 @@ class ProcessedPage:
             return True
 
         return False
+
+    def is_text_horizontal(self) -> bool:
+        """Check the orientation of the text in the page.
+
+        Returns:
+            bool: True if text is 'horizontal'. Otherwise, False for 'vertical'
+        """
+        horizontals = 0
+        verticals = 0
+
+        # Select the texts where the char length is more than 2
+        line_df = self.get_line_df()
+        line_df["fixed_text"] = line_df["fixed_text"].str.strip()
+        line_df = line_df[line_df["fixed_text"].str.len() > 2]
+
+        for _, row in line_df.iterrows():
+            x0, y0, x1, y1 = row["x0"], row["y0"], row["x1"], row["y1"]
+
+            x_len = x1 - x0
+            y_len = y1 - y0
+
+            # If length of y is longer than x, it's vertical. Otherwise, it's horizontal.
+            if y_len > x_len:
+                verticals += 1
+            else:
+                horizontals += 1
+
+        return horizontals >= verticals

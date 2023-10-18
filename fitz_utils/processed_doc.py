@@ -2,7 +2,7 @@ from pathlib import Path
 
 import fitz
 
-from fitz_utils.ProcessedPage import ProcessedPage
+from . import ProcessedPage
 
 
 class ProcessedDoc:
@@ -17,5 +17,5 @@ class ProcessedDoc:
     def __len__(self) -> int:
         return len(self.doc)
 
-    def __getitem__(self, key):
+    def __getitem__(self, key) -> ProcessedPage:
         return ProcessedPage(self.doc[key])

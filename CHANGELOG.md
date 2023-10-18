@@ -1,3 +1,8 @@
+## **[0.0.13] 30-05-2023**
+### **[Added]**
+* ProcessedPage
+  * **is_text_horizontal** -> Check if the text orientation of the page is horizontal
+
 ## **[0.0.12] 16-05-2023**
 ### **[Modified]**
 * ProcessedPage
