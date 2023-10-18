@@ -393,7 +393,7 @@ class ProcessedPage:
         return df
 
     def get_span_df_within_bbox(self, bbox: list) -> pd.DataFrame:
-        """Function to get all the words within a bbox
+        """Function to get all the spans within a bbox
 
         Args:
             bbox (list): list of 4 coordinates of bbox
