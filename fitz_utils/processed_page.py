@@ -1,7 +1,7 @@
 import fitz
+import ftfy
 import numpy as np
 import pandas as pd
-import ftfy
 
 
 class ProcessedPage:
@@ -62,7 +62,7 @@ class ProcessedPage:
         block_df[float_dtypes.columns] = float_dtypes.astype("int")
         return block_df
 
-    def get_line_df(self):
+    def get_line_df(self) -> pd.DataFrame:
         """Generate lines dataframe from page
 
         Returns:
@@ -273,7 +273,7 @@ class ProcessedPage:
 
         return False
 
-    def is_text_horizontal(self):
+    def is_text_horizontal(self) -> bool:
         """Check the orientation of the text in the page.
 
         Returns:

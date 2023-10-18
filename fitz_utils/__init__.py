@@ -1,4 +1,4 @@
-from fitz_utils.ProcessedDoc import ProcessedDoc
-from fitz_utils.ProcessedPage import ProcessedPage
+from .processed_doc import ProcessedDoc
+from .processed_page import ProcessedPage
 
 __all__ = ["ProcessedDoc", "ProcessedPage"]
