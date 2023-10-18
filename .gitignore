@@ -5,3 +5,5 @@ dist/
 fitz_utils.egg-info/
 .idea
 .DS_Store
+*.pdf
+*.ipynb
