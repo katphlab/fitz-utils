@@ -2,6 +2,7 @@ import fitz
 import ftfy
 import numpy as np
 import pandas as pd
+from fitz import Rect
 
 
 class ProcessedPage:
@@ -300,3 +301,129 @@ class ProcessedPage:
                 horizontals += 1
 
         return horizontals >= verticals
+
+    def __iob(self, bbox1: list, bbox2: list) -> float:
+        """
+        Compute the intersection area over box area, for bbox1.
+        """
+        intersection = Rect(bbox1).intersect(bbox2)
+
+        bbox1_area = Rect(bbox1).get_area()
+        if bbox1_area > 0:
+            return intersection.get_area() / bbox1_area
+
+        return 0
+
+    def __dataframe_to_list_of_dict(self, cells_df: pd.DataFrame) -> list[dict]:
+        """Change input data_frame into list of records
+
+        Args:
+            cells_df (Dataframe): Dataframe
+
+        Returns:
+            list[dict]: list of data frame rows in dict format
+        """
+
+        cells_on_page = cells_df.to_dict("records")
+        for cell in cells_on_page:
+            bbox = [cell["x0"], cell["y0"], cell["x1"], cell["y1"]]
+            del cell["x0"], cell["y0"], cell["x1"], cell["y1"]
+            cell["bbox"] = bbox
+        return cells_on_page
+
+    def __generate_rows(self, cells: list[dict]) -> pd.DataFrame:
+        """Function to generate rows based on the cells bbox, the fuction
+        calculates median height of cells. Based on the median height
+        the cells are assigned to their respective rows. e.g if next
+        cell from list of cells sorted in y-coor have y-coor 60% bigger
+        greater than previous cells, this would mean start of a new
+        row.
+
+        Args:
+            cells (list[dict]): list of cells, each cell is individual dictionary
+                    with keys: "bbox", and "text"
+
+        Returns:
+            dataframe: each row in df will have row bbox and cells
+                        contained in that row.
+        """
+        if len(cells) == 0:
+            return cells
+        heights = [item["bbox"][3] - item["bbox"][1] for item in cells]
+        median_height = np.median(heights)
+        height_threshold = 0.6 * median_height
+        sorted_words = sorted(cells, key=lambda w: w["bbox"][1])
+        rows = []
+        current_row = [sorted_words[0]]
+        for word in sorted_words[1:]:
+            avg_y_position = sum([w["bbox"][1] for w in current_row]) / len(current_row)
+            if abs(word["bbox"][1] - avg_y_position) < height_threshold:
+                current_row.append(word)
+            else:
+                rows.append(current_row)
+                current_row = [word]
+        rows.append(current_row)
+        sorted_rows = [sorted(row, key=lambda w: w["bbox"][0]) for row in rows]
+        row_bboxs_and_content = []
+        for i, row in enumerate(sorted_rows):
+            xmin = min(cell["bbox"][0] for cell in row)
+            ymin = min(cell["bbox"][1] for cell in row)
+            xmax = max(cell["bbox"][2] for cell in row)
+            ymax = max(cell["bbox"][3] for cell in row)
+            r = {"bbox": [xmin, ymin, xmax, ymax], "cells": row}
+            row_bboxs_and_content.append(r)
+
+        return row_bboxs_and_content
+
+    def get_word_df_within_bbox(self, bbox: list) -> pd.DataFrame:
+        """Function to get all the words within a bbox
+
+        Args:
+            bbox (list): list of 4 coordinates of bbox
+
+        Returns:
+            dataframe: each row in df will have word bbox and text
+        """
+        df = self.get_word_df()
+        mask = df.apply(
+            lambda row: self.__iob([row.x0, row.y0, row.x1, row.y1], bbox) > 0.6, axis=1
+        )
+        df = df[mask]
+
+        return df
+
+    def get_span_df_within_bbox(self, bbox: list) -> pd.DataFrame:
+        """Function to get all the words within a bbox
+
+        Args:
+            bbox (list): list of 4 coordinates of bbox
+
+        Returns:
+            dataframe: each row in df will have word bbox and text
+
+        """
+        df = self.get_span_df()
+        mask = df.apply(
+            lambda row: self.__iob([row.x0, row.y0, row.x1, row.y1], bbox) > 0.6, axis=1
+        )
+        df = df[mask]
+
+        return df
+
+    def get_line_df_within_bbox(self, bbox: list) -> pd.DataFrame:
+        """
+        Function to get all the lines within a bbox
+        Args:
+            bbox (list): list of 4 coordinates of bbox
+
+        Returns:
+            dataframe: each row in df will have line bbox
+                        and and all the cells in that line, the dataframe will
+                        have two columns: "bbox" and "cells"
+
+        """
+        df = self.get_span_df_within_bbox(bbox)
+        cells_in_dict_format = self.__dataframe_to_list_of_dict(df)
+        rows = self.__generate_rows(cells_in_dict_format)
+        line_df = pd.DataFrame(rows)
+        return line_df
