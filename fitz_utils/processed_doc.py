@@ -2,7 +2,7 @@ from pathlib import Path
 
 import fitz
 
-from . import ProcessedPage
+from .processed_page import ProcessedPage
 
 
 class ProcessedDoc:

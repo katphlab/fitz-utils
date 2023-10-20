@@ -1,3 +1,8 @@
+## **[0.0.15] 20-10-2023**
+
+- ProcessedDoc
+  - **Fix circular imports**
+
 ## **[0.0.14] 06-07-2023**
 
 ### **[Added]**
