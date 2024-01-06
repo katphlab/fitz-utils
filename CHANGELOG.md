@@ -1,3 +1,9 @@
+## **[0.0.16] 06-01-2024**
+
+- Update PyMuPDF version for compatibility with PaddleOCR
+- ProcessedDoc
+  - **crop_pdf_bytes** -> Crop pages of a pdf as another pdf and return bytes
+
 ## **[0.0.15] 20-10-2023**
 
 - ProcessedDoc
