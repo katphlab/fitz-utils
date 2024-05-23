@@ -1,3 +1,7 @@
+## **[0.1.0] Handle rotated pages**
+- Rotate coordinates for bboxes based on page rotation
+
+
 ## **[0.0.16] 06-01-2024**
 
 - Update PyMuPDF version for compatibility with PaddleOCR

@@ -48,12 +48,15 @@ class ProcessedPage:
         blocks: list = self.page.get_text("blocks")
         cols = ["x0", "y0", "x1", "y1", "text", "fixed_text", "rect"]
 
+        rotation_matrix = self.page.rotation_matrix
         block_data = []
         for block in blocks:
+            block = list(block)
             # If block type is image, continue #
             if block[-1] == 1:
                 continue
-            rect = fitz.Rect(block[:4])
+            rect = fitz.Rect(block[:4]).transform(rotation_matrix)
+            block[:4] = list(rect.round())
             block = list(block[:5]) + [rect]
             block.insert(5, ftfy.fix_text(block[4]))
             block_data.append(block)
@@ -84,6 +87,7 @@ class ProcessedPage:
             "rect",
         ]
 
+        rotation_matrix = self.page.rotation_matrix
         data = []
         for block_num, block in enumerate(blocks):
             if "image" in block.keys():
@@ -92,10 +96,10 @@ class ProcessedPage:
             for line_num, line in enumerate(block["lines"]):
                 span_text = list()
 
-                line_bbox = [int(loc) for loc in list(line["bbox"])]
-                line_rect = fitz.Rect(line["bbox"])
+                line_rect = fitz.Rect(line["bbox"]).transform(rotation_matrix)
+                line_bbox = list(line_rect.round())
 
-                for span_num, span in enumerate(line["spans"]):
+                for _, span in enumerate(line["spans"]):
                     rect = fitz.Rect(span["bbox"])
                     if rect not in self.page.rect or set(span["text"]) == {" "}:
                         continue
@@ -131,6 +135,7 @@ class ProcessedPage:
         cols = ["x0", "y0", "x1", "y1", "text", "fixed_text", "size", "flags"]
         cols += ["color", "font", "block_num", "line_num", "span_num", "rect"]
 
+        rotation_matrix = self.page.rotation_matrix
         data = []
         for block_num, block in enumerate(blocks):
             if "image" in block.keys():
@@ -141,7 +146,8 @@ class ProcessedPage:
                     if rect not in self.page.rect or set(span["text"]) == {" "}:
                         continue
 
-                    span_data = list(span["bbox"])
+                    rect = rect.transform(rotation_matrix)
+                    span_data = list(rect.round())
                     span_data.append(span["text"])
                     span_data.append(ftfy.fix_text(span["text"]))
                     span_data.append(span["size"])
@@ -178,9 +184,12 @@ class ProcessedPage:
         ]
         cols += ["rect"]
 
+        rotation_matrix = self.page.rotation_matrix
         word_data = []
         for word in words:
-            rect = fitz.Rect(word[:4])
+            word = list(word)
+            rect = fitz.Rect(word[:4]).transform(rotation_matrix)
+            word[:4] = list(rect.round())
             word = list(word) + [rect]
             word.insert(5, ftfy.fix_text(word[4]))
             word_data.append(word)
@@ -191,7 +200,7 @@ class ProcessedPage:
         return word_df
 
     def get_opencv_img(
-        self, scale: fitz.Matrix = fitz.Matrix(1, 1), dpi: int or None = None
+        self, scale: fitz.Matrix = fitz.Matrix(1, 1), dpi: int | None = None
     ) -> np.ndarray:
         """Get opencv image from page
 
