@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "fitz-utils"
-version = "0.0.17"
+version = "0.0.0"
 description = "Extra functions for use with pymupdf module"
 authors = ["The Walnut AI"]
 readme = "README.md"
