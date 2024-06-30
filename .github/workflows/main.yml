@@ -1,0 +1,53 @@
+name: Build and Upload Wheel on Release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install Poetry
+        run: |
+          curl -sSL https://install.python-poetry.org | python3 -
+          echo "$HOME/.local/bin" >> $GITHUB_PATH
+
+      - name: Configure Poetry
+        run: poetry config virtualenvs.create false
+
+      - name: Install dependencies
+        run: poetry install
+
+      - name: Build package
+        run: poetry build -f wheel
+
+      - name: Get wheel file name
+        id: get_wheel
+        run: echo "WHEEL_FILE=$(ls dist/*.whl)" >> $GITHUB_OUTPUT
+
+      - name: Upload wheel to release
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ${{ steps.get_wheel.outputs.WHEEL_FILE }}
+          asset_name: fitz_utils-${{ github.ref_name }}-py3-none-any.whl
+          asset_content_type: application/x-wheel+zip
+
+      - name: Publish package to PyPI
+        env:
+          PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: |
+          poetry config pypi-token.pypi $PYPI_TOKEN
+          poetry publish

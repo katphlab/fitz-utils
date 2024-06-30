@@ -2,11 +2,11 @@
 name = "fitz-utils"
 version = "0.0.17"
 description = "Extra functions for use with pymupdf module"
-authors = ["The Walnut AI"]
+authors = [""]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.9, <3.13"
+python = "^3.10"
 numpy = "^1.26.1"
 pandas = "^2.1.1"
 pymupdf = "^1.20.0"
