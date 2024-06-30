@@ -2,7 +2,7 @@
 name = "fitz-utils"
 version = "0.0.17"
 description = "Extra functions for use with pymupdf module"
-authors = [""]
+authors = ["The Walnut AI"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
@@ -15,9 +15,7 @@ ftfy = "^6.1.1"
 
 [tool.poetry.group.dev.dependencies]
 pre-commit = "^3.5.0"
-flake8 = "^6.1.0"
-black = "^23.10.0"
-isort = "^5.12.0"
+ruff = "^0.5.0"
 
 
 [tool.poetry-dynamic-versioning]
