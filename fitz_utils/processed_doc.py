@@ -32,4 +32,4 @@ class ProcessedDoc(fitz.Document):
         return page_doc_bytes
 
     def __getitem__(self, key) -> ProcessedPage:
-        return ProcessedPage(super().load_page(key))
+        return ProcessedPage(super().__getitem__(key))
