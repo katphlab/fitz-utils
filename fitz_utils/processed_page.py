@@ -5,13 +5,16 @@ import pandas as pd
 from fitz import Rect
 
 
-class ProcessedPage:
+class ProcessedPage(fitz.Page):
     """Class to provide extra methods to pymupdf page class"""
 
     def __init__(self, page: fitz.Page) -> None:
-        self.page = page
+        self._page = page
 
-    def get_font_flags(self, flags: int) -> list:
+    def __getattr__(self, name):
+        return getattr(self._page, name)
+
+    def get_font_flags(self, flags: int) -> list[str]:
         """Make font flags human readable.
 
         Args:
@@ -45,10 +48,10 @@ class ProcessedPage:
         """
         # Block data format: (x0, y0, x1, y1, "lines in the block", block_no, #
         # block_type) #
-        blocks: list = self.page.get_text("blocks")
+        blocks: list = self.get_text("blocks")
         cols = ["x0", "y0", "x1", "y1", "text", "fixed_text", "rect"]
 
-        rotation_matrix = self.page.rotation_matrix
+        rotation_matrix = self.rotation_matrix
         block_data = []
         for block in blocks:
             block = list(block)
@@ -74,7 +77,7 @@ class ProcessedPage:
             "flags","color", "font", "block_num", "line_num", "span_num", "rect"]
         """
 
-        blocks = self.page.get_text("dict")["blocks"]
+        blocks = self.get_text("dict")["blocks"]
         cols = [
             "x0",
             "y0",
@@ -87,7 +90,7 @@ class ProcessedPage:
             "rect",
         ]
 
-        rotation_matrix = self.page.rotation_matrix
+        rotation_matrix = self.rotation_matrix
         data = []
         for block_num, block in enumerate(blocks):
             if "image" in block.keys():
@@ -101,7 +104,7 @@ class ProcessedPage:
 
                 for _, span in enumerate(line["spans"]):
                     rect = fitz.Rect(span["bbox"])
-                    if rect not in self.page.rect or set(span["text"]) == {" "}:
+                    if rect not in self.rect or set(span["text"]) == {" "}:
                         continue
                     span_text.append(span["text"])
 
@@ -131,11 +134,11 @@ class ProcessedPage:
             pd.DataFrame: Columns - ["x0", "y0", "x1", "y1", "text", "fixed_text", "size",
             "flags","color", "font", "block_num", "line_num", "span_num", "rect"]
         """
-        blocks = self.page.get_text("dict")["blocks"]
+        blocks = self.get_text("dict")["blocks"]
         cols = ["x0", "y0", "x1", "y1", "text", "fixed_text", "size", "flags"]
         cols += ["color", "font", "block_num", "line_num", "span_num", "rect"]
 
-        rotation_matrix = self.page.rotation_matrix
+        rotation_matrix = self.rotation_matrix
         data = []
         for block_num, block in enumerate(blocks):
             if "image" in block.keys():
@@ -143,7 +146,7 @@ class ProcessedPage:
             for line_num, line in enumerate(block["lines"]):
                 for span_num, span in enumerate(line["spans"]):
                     rect = fitz.Rect(span["bbox"])
-                    if rect not in self.page.rect or set(span["text"]) == {" "}:
+                    if rect not in self.rect or set(span["text"]) == {" "}:
                         continue
 
                     rect = rect.transform(rotation_matrix)
@@ -170,7 +173,7 @@ class ProcessedPage:
             "line_no", "word_no", "rect"]
         """
         # Word data format (x0, y0, x1, y1, "word", block_no, line_no, word_no) #
-        words: list = self.page.get_text("words")
+        words: list = self.get_text("words")
         cols = [
             "x0",
             "y0",
@@ -184,7 +187,7 @@ class ProcessedPage:
         ]
         cols += ["rect"]
 
-        rotation_matrix = self.page.rotation_matrix
+        rotation_matrix = self.rotation_matrix
         word_data = []
         for word in words:
             word = list(word)
@@ -212,9 +215,9 @@ class ProcessedPage:
             np.array: Opencv image
         """
         if dpi:
-            pix = self.page.get_pixmap(dpi=dpi)
+            pix = self.get_pixmap(dpi=dpi)
         else:
-            pix = self.page.get_pixmap(matrix=scale)
+            pix = self.get_pixmap(matrix=scale)
 
         im = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
         im = np.ascontiguousarray(im[..., [2, 1, 0]])  # rgb to bgr
@@ -230,9 +233,7 @@ class ProcessedPage:
         df = self.get_word_df()
 
         temp_doc = fitz.open()
-        temp_page = temp_doc.new_page(
-            width=self.page.rect.width, height=self.page.rect.height
-        )
+        temp_page = temp_doc.new_page(width=self.rect.width, height=self.rect.height)
         df.apply(
             lambda row: temp_page.insert_text(
                 (row.x0, row.y1),
@@ -261,9 +262,9 @@ class ProcessedPage:
 
         # Get the list of raw text on whole page or a segment of page if the rect is present
         if rect:
-            extracted_texts = self.page.get_textbox(rect).split()
+            extracted_texts = self.get_textbox(rect).split()
         else:
-            extracted_texts = self.page.get_text().split()
+            extracted_texts = self.get_text().split()
 
         # If we cannot extract any text, it maybe either blank page or scan page
         if len(extracted_texts) == 0:
