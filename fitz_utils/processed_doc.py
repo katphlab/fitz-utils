@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import overload
 
 import fitz
 
@@ -34,7 +35,11 @@ class ProcessedDoc(fitz.Document):
     def load_page(self, key) -> ProcessedPage:
         return ProcessedPage(super().load_page(key))
 
-    def __getitem__(self, i: int = 0) -> ProcessedPage | list[ProcessedPage]:
+    @overload
+    def __getitem__(self, i: slice) -> list[ProcessedPage]: ...
+    @overload
+    def __getitem__(self, i: int) -> ProcessedPage: ...
+    def __getitem__(self, i: int | slice = 0) -> ProcessedPage | list[ProcessedPage]:
         if isinstance(i, slice):
             return [self[j] for j in range(*i.indices(len(self)))]
         assert isinstance(i, int) or (
