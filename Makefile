@@ -1,4 +1,11 @@
 install:
-	poetry install --no-root --sync
-	poetry run pre-commit install
-	poetry run pre-commit autoupdate
+	uv sync --all-extras --all-groups
+	uv run pre-commit install
+	uv run pre-commit autoupdate
+
+test:
+	uv run pytest
+
+lint:
+	uv run ruff format --check .
+	uv run mypy .

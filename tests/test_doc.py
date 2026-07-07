@@ -1,5 +1,5 @@
-import sys
 from pathlib import Path
+import sys
 
 root_dir = Path(__file__).resolve().parent.parent
 sys.path.append(str(root_dir))
@@ -17,7 +17,7 @@ def test_open_doc_by_name() -> None:
 
 
 def test_open_doc_by_bytes() -> None:
-    with open(sample_file, "rb") as f:
+    with Path(sample_file).open("rb") as f:
         doc = ProcessedDoc(stream=f.read())
     assert isinstance(doc, ProcessedDoc)
     assert len(doc) == 1
