@@ -1,0 +1,121 @@
+line-length = 100
+indent-width = 4
+target-version = "py314"
+src = ["src", "tests"]
+
+extend-exclude = [
+  ".venv",
+  "venv",
+  ".mypy_cache",
+  ".pytest_cache",
+  ".ruff_cache",
+  "build",
+  "dist",
+  "node_modules",
+  "migrations",
+]
+
+[lint]
+select = [
+  # Core correctness
+  "E",      # pycodestyle errors
+  "W",      # pycodestyle warnings
+  "F",      # Pyflakes
+
+  # Modern Python
+  "UP",     # pyupgrade
+
+  # Import hygiene
+  "I",      # isort
+  "TID",    # tidy imports
+
+  # Bug prevention
+  "B",      # flake8-bugbear
+  "A",      # flake8-builtins
+  "C4",     # flake8-comprehensions
+  "SIM",    # flake8-simplify
+  "RET",    # flake8-return
+  "ARG",    # unused function args
+  "PTH",    # pathlib
+  "ERA",    # commented-out code
+
+  # Async / web-app safety
+  "ASYNC",  # async correctness
+
+  # Security
+  "S",      # flake8-bandit
+
+  # Type annotation style
+  "FA",     # future annotations
+  "TC",     # type-checking imports
+  "PYI",    # stub-file quality
+
+  # Ruff-specific
+  "RUF",
+]
+
+ignore = [
+  # Formatter conflicts / too noisy
+  "E501",    # line too long; formatter handles most cases
+  "COM812",  # conflicts with formatter if COM is later enabled
+  "ISC001",  # conflicts with formatter if ISC is later enabled
+
+  # Security rules too noisy for app code/tests
+  "S101",    # assert
+  "S104",    # possible binding to all interfaces; common in web apps
+  "S311",    # pseudo-random generators; often fine outside crypto
+
+  # Too annoying for normal app development
+  "RET504",  # unnecessary assignment before return
+  "SIM108",  # ternary recommendation; often less readable
+  "ARG002",  # unused method argument; common in interfaces/hooks
+  "RUF012",  # mutable class attrs; too noisy with some frameworks
+]
+
+fixable = ["ALL"]
+unfixable = [
+  "ERA", # do not auto-delete commented-out code
+]
+
+[lint.isort]
+combine-as-imports = true
+force-sort-within-sections = true
+known-first-party = ["src"]
+section-order = [
+  "future",
+  "standard-library",
+  "third-party",
+  "first-party",
+  "local-folder",
+]
+
+[lint.flake8-tidy-imports]
+ban-relative-imports = "parents"
+
+[lint.flake8-type-checking]
+strict = true
+
+[lint.per-file-ignores]
+"tests/**/*.py" = [
+  "S101",    # assert is normal in tests
+  "ARG001",  # fixtures may appear unused
+  "ARG002",
+  "PLR2004", # magic values in tests are fine if PLR is later enabled
+]
+
+"**/__init__.py" = [
+  "F401", # re-exports
+]
+
+"scripts/**/*.py" = [
+  "T201", # print allowed in scripts
+  "S101",
+]
+
+[format]
+quote-style = "double"
+indent-style = "space"
+line-ending = "auto"
+skip-magic-trailing-comma = false
+docstring-code-format = true
+docstring-code-line-length = 100
