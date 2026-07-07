@@ -1,15 +1,17 @@
-from pathlib import Path
-from typing import overload
+from typing import TYPE_CHECKING, overload
 
-import fitz
+import pymupdf
 
 from .processed_page import ProcessedPage
 
+if TYPE_CHECKING:
+    from pathlib import Path
 
-class ProcessedDoc(fitz.Document):
+
+class ProcessedDoc(pymupdf.Document):
     """Class to provide extra methods to pymupdf doc class"""
 
-    def __init__(self, fname: Path = None, stream: bytes = None) -> None:
+    def __init__(self, fname: Path | None = None, stream: bytes | None = None) -> None:
         if not fname:
             super().__init__(stream=stream)
         else:
@@ -26,16 +28,16 @@ class ProcessedDoc(fitz.Document):
         Returns:
         - bytes: The cropped document as bytes.
         """
-        page_doc = fitz.open()
+        page_doc = pymupdf.open()
         page_doc.insert_pdf(self, from_page=from_page, to_page=to_page)
-        page_doc_bytes = page_doc.write()
+        page_doc_bytes: bytes = page_doc.write()
         page_doc.close()
         return page_doc_bytes
 
-    def load_page(self, key) -> ProcessedPage:
-        return ProcessedPage(super().load_page(key))
+    def load_page(self, page_id: int | tuple[int, int] | None = None) -> ProcessedPage:
+        return ProcessedPage(super().load_page(page_id))
 
-    @overload
+    @overload  # type: ignore[override]
     def __getitem__(self, i: slice) -> list[ProcessedPage]: ...
     @overload
     def __getitem__(self, i: int) -> ProcessedPage: ...
@@ -45,6 +47,6 @@ class ProcessedDoc(fitz.Document):
         assert isinstance(i, int) or (
             isinstance(i, tuple) and len(i) == 2 and all(isinstance(x, int) for x in i)
         ), f"Invalid item number: {i=}."
-        if i not in self:
+        if i not in self:  # type: ignore[operator]
             raise IndexError(f"page {i} not in document")
         return self.load_page(i)

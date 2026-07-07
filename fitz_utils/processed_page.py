@@ -1,17 +1,20 @@
-import fitz
+from typing import Any
+
 import ftfy
+import ftfy.badness
 import numpy as np
 import pandas as pd
-from fitz import Rect
+import pymupdf
+from pymupdf import Rect
 
 
-class ProcessedPage(fitz.Page):
+class ProcessedPage(pymupdf.Page):
     """Class to provide extra methods to pymupdf page class"""
 
-    def __init__(self, page: fitz.Page) -> None:
+    def __init__(self, page: pymupdf.Page) -> None:
         self._page = page
 
-    def __getattr__(self, name):
+    def __getattr__(self, name: str) -> Any:
         return getattr(self._page, name)
 
     def get_font_flags(self, flags: int) -> list[str]:
@@ -48,7 +51,7 @@ class ProcessedPage(fitz.Page):
         """
         # Block data format: (x0, y0, x1, y1, "lines in the block", block_no, #
         # block_type) #
-        blocks: list = self.get_text("blocks")
+        blocks: list[Any] = self.get_text("blocks")
         cols = ["x0", "y0", "x1", "y1", "text", "fixed_text", "rect"]
 
         rotation_matrix = self.rotation_matrix
@@ -58,9 +61,9 @@ class ProcessedPage(fitz.Page):
             # If block type is image, continue #
             if block[-1] == 1:
                 continue
-            rect = fitz.Rect(block[:4]).transform(rotation_matrix)
+            rect = pymupdf.Rect(block[:4]).transform(rotation_matrix)
             block[:4] = list(rect.round())
-            block = list(block[:5]) + [rect]
+            block = [*list(block[:5]), rect]
             block.insert(5, ftfy.fix_text(block[4]))
             block_data.append(block)
 
@@ -93,18 +96,18 @@ class ProcessedPage(fitz.Page):
         rotation_matrix = self.rotation_matrix
         data = []
         for block_num, block in enumerate(blocks):
-            if "image" in block.keys():
+            if "image" in block:
                 continue
 
             for line_num, line in enumerate(block["lines"]):
-                span_text = list()
+                span_text = []
 
-                line_rect = fitz.Rect(line["bbox"]).transform(rotation_matrix)
+                line_rect = pymupdf.Rect(line["bbox"]).transform(rotation_matrix)
                 line_bbox = list(line_rect.round())
 
                 for _, span in enumerate(line["spans"]):
-                    rect = fitz.Rect(span["bbox"])
-                    if rect not in self.rect or set(span["text"]) == {" "}:
+                    rect = pymupdf.Rect(span["bbox"])
+                    if not self.rect.contains(rect) or set(span["text"]) == {" "}:
                         continue
                     span_text.append(span["text"])
 
@@ -141,21 +144,21 @@ class ProcessedPage(fitz.Page):
         rotation_matrix = self.rotation_matrix
         data = []
         for block_num, block in enumerate(blocks):
-            if "image" in block.keys():
+            if "image" in block:
                 continue
             for line_num, line in enumerate(block["lines"]):
                 for span_num, span in enumerate(line["spans"]):
-                    rect = fitz.Rect(span["bbox"])
-                    if rect not in self.rect or set(span["text"]) == {" "}:
+                    rect = pymupdf.Rect(span["bbox"])
+                    if not self.rect.contains(rect) or set(span["text"]) == {" "}:
                         continue
 
                     rect = rect.transform(rotation_matrix)
-                    span_data = list(rect.round())
+                    span_data: list[Any] = list(rect.round())
                     span_data.append(span["text"])
                     span_data.append(ftfy.fix_text(span["text"]))
                     span_data.append(span["size"])
                     span_data.append(span["flags"])
-                    span_data.append(fitz.sRGB_to_pdf(span["color"]))
+                    span_data.append(pymupdf.sRGB_to_pdf(span["color"]))  # type: ignore[attr-defined]
                     span_data.append(span["font"])
                     span_data += [block_num, line_num, span_num, rect]
                     data.append(span_data)
@@ -173,7 +176,7 @@ class ProcessedPage(fitz.Page):
             "line_no", "word_no", "rect"]
         """
         # Word data format (x0, y0, x1, y1, "word", block_no, line_no, word_no) #
-        words: list = self.get_text("words")
+        words: list[Any] = self.get_text("words")
         cols = [
             "x0",
             "y0",
@@ -191,9 +194,9 @@ class ProcessedPage(fitz.Page):
         word_data = []
         for word in words:
             word = list(word)
-            rect = fitz.Rect(word[:4]).transform(rotation_matrix)
+            rect = pymupdf.Rect(word[:4]).transform(rotation_matrix)
             word[:4] = list(rect.round())
-            word = list(word) + [rect]
+            word = [*word, rect]
             word.insert(5, ftfy.fix_text(word[4]))
             word_data.append(word)
 
@@ -203,12 +206,12 @@ class ProcessedPage(fitz.Page):
         return word_df
 
     def get_opencv_img(
-        self, scale: fitz.Matrix = fitz.Matrix(1, 1), dpi: int | None = None
+        self, scale: pymupdf.Matrix | None = None, dpi: int | None = None
     ) -> np.ndarray:
         """Get opencv image from page
 
         Args:
-            scale (fitz.Matrix): scaling matrix for generating pixmap
+            scale (pymupdf.Matrix): scaling matrix for generating pixmap
             dpi: dots per inch which can be used in place of Matrix
 
         Returns:
@@ -217,7 +220,7 @@ class ProcessedPage(fitz.Page):
         if dpi:
             pix = self.get_pixmap(dpi=dpi)
         else:
-            pix = self.get_pixmap(matrix=scale)
+            pix = self.get_pixmap(matrix=scale or pymupdf.Matrix(1, 1))
 
         im = np.frombuffer(pix.samples, dtype=np.uint8).reshape(pix.h, pix.w, pix.n)
         im = np.ascontiguousarray(im[..., [2, 1, 0]])  # rgb to bgr
@@ -232,7 +235,7 @@ class ProcessedPage(fitz.Page):
         """
         df = self.get_word_df()
 
-        temp_doc = fitz.open()
+        temp_doc = pymupdf.open()
         temp_page = temp_doc.new_page(width=self.rect.width, height=self.rect.height)
         df.apply(
             lambda row: temp_page.insert_text(
@@ -246,7 +249,7 @@ class ProcessedPage(fitz.Page):
         temp_doc.close()
         return unformatted_img
 
-    def is_digital(self, tolerance: float = 0.5, rect: fitz.Rect = None) -> bool:
+    def is_digital(self, tolerance: float = 0.5, rect: pymupdf.Rect | None = None) -> bool:
         """Check the page is scan or digital
 
         Calculate the number of mojibakes counts and check (based on ROI if
@@ -254,7 +257,7 @@ class ProcessedPage(fitz.Page):
 
         Args:
             tolerance (float): The tolerance rate for mojibakes (gibberish words)
-            rect (fitz.Rect): The ROI (Region of Interest) rectangle on the page to check if it's the digital
+            rect (pymupdf.Rect): The ROI (Region of Interest) rectangle on the page to check if it's the digital
 
         Returns:
             bool: True if Digital. False if Scan.
@@ -271,18 +274,12 @@ class ProcessedPage(fitz.Page):
             return False
 
         # Check how many words are likely mojibake
-        mojibakes = [
-            ftfy.badness.is_bad(extracted_text) for extracted_text in extracted_texts
-        ]
+        mojibakes = [ftfy.badness.is_bad(extracted_text) for extracted_text in extracted_texts]
 
         # Get the mojibake percentage
         mojibakes_percent = sum(mojibakes) / len(extracted_texts)
 
-        # If the mojibakes percent is same or under the tolerance rate
-        if mojibakes_percent <= tolerance:
-            return True
-
-        return False
+        return mojibakes_percent <= tolerance
 
     def is_text_horizontal(self) -> bool:
         """Check the orientation of the text in the page.
@@ -312,7 +309,7 @@ class ProcessedPage(fitz.Page):
 
         return horizontals >= verticals
 
-    def __iob(self, bbox1: list, bbox2: list) -> float:
+    def __iob(self, bbox1: list[float], bbox2: list[float]) -> float:
         """
         Compute the intersection area over box area, for bbox1.
         """
@@ -320,11 +317,11 @@ class ProcessedPage(fitz.Page):
 
         bbox1_area = Rect(bbox1).get_area()
         if bbox1_area > 0:
-            return intersection.get_area() / bbox1_area
+            return float(intersection.get_area() / bbox1_area)
 
         return 0
 
-    def __dataframe_to_list_of_dict(self, cells_df: pd.DataFrame) -> list[dict]:
+    def __dataframe_to_list_of_dict(self, cells_df: pd.DataFrame) -> list[dict[str, Any]]:
         """Change input data_frame into list of records
 
         Args:
@@ -334,14 +331,14 @@ class ProcessedPage(fitz.Page):
             list[dict]: list of data frame rows in dict format
         """
 
-        cells_on_page = cells_df.to_dict("records")
+        cells_on_page: list[dict[str, Any]] = cells_df.to_dict("records")  # type: ignore[assignment]
         for cell in cells_on_page:
             bbox = [cell["x0"], cell["y0"], cell["x1"], cell["y1"]]
             del cell["x0"], cell["y0"], cell["x1"], cell["y1"]
             cell["bbox"] = bbox
         return cells_on_page
 
-    def __generate_rows(self, cells: list[dict]) -> pd.DataFrame:
+    def __generate_rows(self, cells: list[dict[str, Any]]) -> list[dict[str, Any]]:
         """Function to generate rows based on the cells bbox, the fuction
         calculates median height of cells. Based on the median height
         the cells are assigned to their respective rows. e.g if next
@@ -375,7 +372,7 @@ class ProcessedPage(fitz.Page):
         rows.append(current_row)
         sorted_rows = [sorted(row, key=lambda w: w["bbox"][0]) for row in rows]
         row_bboxs_and_content = []
-        for i, row in enumerate(sorted_rows):
+        for _, row in enumerate(sorted_rows):
             xmin = min(cell["bbox"][0] for cell in row)
             ymin = min(cell["bbox"][1] for cell in row)
             xmax = max(cell["bbox"][2] for cell in row)
@@ -385,7 +382,7 @@ class ProcessedPage(fitz.Page):
 
         return row_bboxs_and_content
 
-    def get_word_df_within_bbox(self, bbox: list) -> pd.DataFrame:
+    def get_word_df_within_bbox(self, bbox: list[float]) -> pd.DataFrame:
         """Function to get all the words within a bbox
 
         Args:
@@ -402,7 +399,7 @@ class ProcessedPage(fitz.Page):
 
         return df
 
-    def get_span_df_within_bbox(self, bbox: list) -> pd.DataFrame:
+    def get_span_df_within_bbox(self, bbox: list[float]) -> pd.DataFrame:
         """Function to get all the spans within a bbox
 
         Args:
@@ -420,7 +417,7 @@ class ProcessedPage(fitz.Page):
 
         return df
 
-    def get_line_df_within_bbox(self, bbox: list) -> pd.DataFrame:
+    def get_line_df_within_bbox(self, bbox: list[float]) -> pd.DataFrame:
         """
         Function to get all the lines within a bbox
         Args:
